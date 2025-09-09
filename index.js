@@ -16,28 +16,29 @@ const dbClient = new Client({
   }
 });
 
-dbClient.connect();
+// Add a .catch() block to handle connection errors
+dbClient.connect()
+  .then(() => console.log('Database connected successfully'))
+  .catch(err => console.error('Database connection error:', err.stack));
+
+const { MessagingResponse } = require('twilio').twiml;
 
 async function findTonerCode(query) {
-  // Use a case-insensitive search with a simple pattern match
   const sqlQuery = `SELECT * FROM toner_products WHERE product_code ILIKE $1;`;
   const values = [`%${query}%`];
   
   try {
     const res = await dbClient.query(sqlQuery, values);
-    return res.rows[0] || null; // Return the first matching row or null
+    return res.rows[0] || null;
   } catch (error) {
     console.error('Error finding toner:', error);
     return null;
   }
 }
 
-// Corrected Twilio import and usage
-const { MessagingResponse } = require('twilio').twiml;
-
 app.post('/whatsapp', async (req, res) => {
   const incomingMsg = req.body.Body.trim();
-  const twiml = new MessagingResponse(); // Corrected constructor
+  const twiml = new MessagingResponse();
   
   const toner = await findTonerCode(incomingMsg);
   
