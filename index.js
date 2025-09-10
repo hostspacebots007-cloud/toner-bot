@@ -16,17 +16,22 @@ const dbClient = new Client({
   }
 });
 
-// Add a .catch() block to handle connection errors
 dbClient.connect()
   .then(() => console.log('Database connected successfully'))
   .catch(err => console.error('Database connection error:', err.stack));
 
 const { MessagingResponse } = require('twilio').twiml;
 
+// Improved toner search function
 async function findTonerCode(query) {
-  const sqlQuery = `SELECT * FROM toner_products WHERE product_code ILIKE $1;`;
-  const values = [`%${query}%`];
-  
+  const cleanedQuery = query.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
+  const sqlQuery = `
+    SELECT * FROM toner_products
+    WHERE LOWER(REPLACE(REPLACE(product_code, '-', ''), ' ', '')) LIKE $1
+  `;
+  const values = [`%${cleanedQuery}%`];
+
   try {
     const res = await dbClient.query(sqlQuery, values);
     return res.rows[0] || null;
@@ -39,9 +44,9 @@ async function findTonerCode(query) {
 app.post('/whatsapp', async (req, res) => {
   const incomingMsg = req.body.Body.trim();
   const twiml = new MessagingResponse();
-  
+
   const toner = await findTonerCode(incomingMsg);
-  
+
   if (toner) {
     const responseMsg = `
 Product: ${toner.product_name}
@@ -50,13 +55,12 @@ Manufacturer: ${toner.manufacturer}
 Price: R ${parseFloat(toner.unit_price).toFixed(2)}
 In Stock: ${toner.quantity_in_stock}
 Status: ${toner.status}`;
-
     twiml.message(responseMsg);
   } else {
     twiml.message('Sorry, I couldn\'t find that toner code. Please try again.');
   }
 
-  res.writeHead(200, {'Content-Type': 'text/xml'});
+  res.writeHead(200, { 'Content-Type': 'text/xml' });
   res.end(twiml.toString());
 });
 
