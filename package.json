@@ -1,13 +1,15 @@
 {
+  "name": "toner-bot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "pdfkit": "^0.14.0",
+    "pg": "^8.11.3",
+    "twilio": "^4.19.0"
+  },
   "scripts": {
     "start": "node index.js"
-  },
-  "dependencies": {
-    "dotenv": "^17.2.2",
-    "express": "^5.1.0",
-    "googleapis": "^159.0.0",
-    "pdfkit": "^0.17.2",
-    "pg": "^8.16.3",
-    "twilio": "^5.9.0"
   }
 }
