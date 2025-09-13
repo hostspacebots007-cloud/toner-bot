@@ -255,6 +255,7 @@ app.get('/quote/:quoteNumber', async (req, res) => {
 
 // WhatsApp webhook endpoint
 app.post('/whatsapp', async (req, res) => {
+    console.log('Incoming Twilio webhook:', req.body);
   const from = req.body.From || req.body.from;
   const incomingMsg = (req.body.Body || req.body.body || '').trim();
   const lowerMsg = incomingMsg.toLowerCase();
@@ -430,6 +431,22 @@ app.get('/whatsapp', (req, res) => {
   
   res.status(200).send('WhatsApp webhook is active');
 });
+
+
+app.get('/meta-webhook', (req, res) => {
+    const VERIFY_TOKEN = process.env.META_VERIFY_TOKEN || "my_secure_token";
+    const mode = req.query['hub.mode'];
+    const token = req.query['hub.verify_token'];
+    const challenge = req.query['hub.challenge'];
+
+    if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+        console.log('Meta webhook verified');
+        res.status(200).send(challenge);
+    } else {
+        res.sendStatus(403);
+    }
+});
+
 
 // Health check endpoint
 app.get('/health', async (req, res) => {
